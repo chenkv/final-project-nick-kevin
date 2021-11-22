@@ -21,6 +21,51 @@ void displayMenu()
     cout << "#> ";
 }
 int main(int argc, char* argv[]) {
+    int option = 0;
+    MiniGit git;
+
+    while (true) {
+        displayMenu();
+        cin >> option;
+
+        switch (option) {
+            case 1:
+
+                break;
+            
+            case 2: {
+                string name;
+                cout << "Enter a file name: ";
+                cin >> name;
+                git.add(name);
+                break;
+            }
+
+            case 3:
+
+                break;
+
+            case 4:
+
+                break;
+
+            case 5:
+
+                break;
+
+            case 6:
+
+                break;
+            
+            case 7:
+                return 0;
+                break;
+            
+            default:
+                return 0;
+                break;
+        }
+    }
    
     return 0;
 }
