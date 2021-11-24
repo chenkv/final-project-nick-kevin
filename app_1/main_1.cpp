@@ -21,21 +21,21 @@ void displayMenu()
     cout << "#> ";
 }
 int main(int argc, char* argv[]) {
-    int option = 0;
     MiniGit git;
 
     while (true) {
+        int option = 1;
         displayMenu();
         cin >> option;
 
         switch (option) {
             case 1:
-
+                git.init(5);
                 break;
             
             case 2: {
                 string name;
-                cout << "Enter a file name: ";
+                cout << "Enter the filename to be added: ";
                 cin >> name;
                 git.add(name);
                 break;
@@ -60,10 +60,13 @@ int main(int argc, char* argv[]) {
             case 7:
                 return 0;
                 break;
-            
-            default:
-                return 0;
+
+            default: {
+                cout << "Improper choice" << endl;
+                displayMenu();
+                cin >> option;
                 break;
+            }
         }
     }
    
