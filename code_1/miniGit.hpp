@@ -45,6 +45,7 @@ public:
     string commit(string msg);
     void checkout(string commitID);
     void printSearchTable();
+    void printCommits();
     
     
 };

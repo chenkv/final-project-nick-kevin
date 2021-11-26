@@ -156,6 +156,33 @@ void MiniGit::search(string key)
 {
 }
 
+void MiniGit::printCommits(){
+    BranchNode* commit = commitHead;
+
+    if(commit){
+        while(commit->previous){
+            commit = commit->previous;
+        }
+    }else{
+        cout << "Commit history empty." << endl;
+        return;
+    }
+
+    while(commit && commit->commitMessage.length() > 0){
+        cout << commit->commitMessage << "(";
+
+        FileNode* SLL = commit->fileHead;
+        while(SLL){
+            cout << SLL->name << "[" << SLL->version << "], ";
+            SLL = SLL->next;
+        }
+        cout << ") => ";
+
+        commit = commit->next;
+    }
+    cout << endl;
+}
+
 bool MiniGit::isUniqueCommitMessage(string msg){
     BranchNode* ptr = commitHead;
 
@@ -227,12 +254,17 @@ void createFileVersion(string fileName, int version){
 }
 
 bool areFilesEqual(FileNode* currVer, FileNode* newVer){
+    string currFileName = currVer->name;
+    if(currVer->version < 10){
+        currFileName += "0"; 
+    }
+    currFileName += to_string(currVer->version);
+    
     ifstream currFile; //File is in .minigit
-    currFile.open(".minigit/" + currVer->name + to_string(currVer->version));
+    currFile.open(".minigit/" + currFileName);
 
     ifstream newFile;
     newFile.open(newVer->name);
-
 
     string currFileStr, newFileStr, a, b;
 
@@ -243,8 +275,11 @@ bool areFilesEqual(FileNode* currVer, FileNode* newVer){
         newFileStr += b;
     }
 
+    cout << currFileStr << endl;
+    cout << newFileStr << endl;
+
     if(currFileStr == newFileStr) return true;
-    else return false;
+    return false;
 }
 
 void copySLL(BranchNode* a, BranchNode* b){
@@ -264,11 +299,12 @@ void copySLL(BranchNode* a, BranchNode* b){
         }else{ //Else this is the first file inserted
             b->fileHead = clone;
         }
+
+        a_iter = a_iter->next;
     }
 }
 
 string MiniGit::commit(string msg) {
-
     commitHead->commitMessage = msg;
 
     FileNode* fileptr = commitHead->fileHead;
@@ -279,10 +315,15 @@ string MiniGit::commit(string msg) {
             createFileVersion(fileptr->name, fileptr->version);
         }
         else if(!areFilesEqual(fileptr, prevVersion)){//If files are not equal create new version
+            //cout << "Files not equal" << endl;
             fileptr->version = fileptr->version + 1;
 
             createFileVersion(fileptr->name, fileptr->version);
+        }else{
+            //cout << "Files are equal" << endl;
         }
+
+        fileptr = fileptr->next;
     }
 
     /**
@@ -299,6 +340,9 @@ string MiniGit::commit(string msg) {
     newNode->commitID = commitHead->commitID + 1;
 
     commitHead = newNode;
+
+    cout << commitHead->previous->commitMessage;
+
 
     return to_string(newNode->commitID); //should return the commitID of the commited DLL node
 }

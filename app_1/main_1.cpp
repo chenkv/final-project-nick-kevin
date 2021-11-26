@@ -72,6 +72,10 @@ int main(int argc, char* argv[]) {
                 return 0;
                 break;
             }
+            case 8: {
+                git.printCommits();
+                break;
+            }
             default: {
                 cout << "Improper choice" << endl;
                 displayMenu();
