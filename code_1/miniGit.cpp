@@ -62,6 +62,10 @@ void MiniGit::add(string fileName) {
     BranchNode* latest = commitHead;
     int version = 0;
 
+    while (latest->previous != NULL) {
+        latest = latest->previous;
+    }
+
     while (latest->next != NULL) {
         FileNode* curr = latest->fileHead;
         while (curr != NULL) {
