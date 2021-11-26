@@ -9,6 +9,8 @@ namespace fs = std::filesystem;
 #include "miniGit.hpp"
 #include <vector>
 
+void createFileVersion(string fileName, int version);
+
 MiniGit::MiniGit() {
     fs::remove_all(".minigit");
     fs::create_directory(".minigit");
@@ -45,27 +47,6 @@ void MiniGit::init(int hashtablesize) {
 //    commitHead->commitID = 0;
 //    commitHead->fileHead = NULL;
 //    commitHead->previous = NULL;
-
-    /*
-   int choice = -1;
-   cin >> choice;
-
-   printCommitMenu();
-
-   switch(choice){
-        case 1: //Add a file
-            break;
-        case 2:
-            break;
-        case 3: 
-            break;
-        case 4:
-            break;
-        default:
-            cout << "That is not an option."
-            
-   }
-   */
 }
 
 void MiniGit::add(string fileName) {
@@ -139,20 +120,28 @@ void MiniGit::add(string fileName) {
     cout << endl;
 }
 
+FileNode* rmHelper(FileNode* ptr, string fileName, bool & removed){
+    if(ptr->name == fileName){
+        FileNode* next = ptr->next;
+        delete ptr;
+        removed = true;
+        return next;
+    }
+    else if(ptr->next){
+        ptr->next = rmHelper(ptr->next, fileName, removed);
+        return ptr;
+    }else{
+        return NULL;
+    }
+}
+
 void MiniGit::rm(string fileName) {
-    cout << "Enter file name\n#> ";
-    string filename;
-    cin >> filename;
-
     FileNode* SLL = commitHead->fileHead;
-    if(SLL->name == fileName){ //Is first element the head?
-        FileNode*  tmp = SLL;
-        commitHead->fileHead = SLL->next;
-    }
+    bool removed = false;
+    commitHead->fileHead = rmHelper(SLL, fileName, removed);
 
-    while(true){
-        
-    }
+    if(removed) cout << "Removed " << fileName << endl;
+    else cout << "File not found." << endl;
 }
 
 
@@ -167,10 +156,151 @@ void MiniGit::search(string key)
 {
 }
 
+bool MiniGit::isUniqueCommitMessage(string msg){
+    BranchNode* ptr = commitHead;
 
+    //Check commit head
+    if(ptr->commitMessage == msg) return false;
+    
+    //Search backwards from commit head
+    BranchNode* prev = ptr->previous;
+    while(prev != NULL){
+        if(prev->commitMessage == msg) return false;
+        prev = prev->previous;
+    }
+
+    //Search forwards from commit head
+    BranchNode* next = ptr->next;
+    while( next != NULL){
+        if(next->commitMessage == msg) return false;
+        next = next->next;
+    }
+
+    return true;
+}
+
+FileNode* MiniGit::findExistingVersion(string fileName, int version){
+    BranchNode* ptr = commitHead;
+
+    //Start at beginning
+    while(ptr->previous != NULL){
+        ptr = ptr->previous;
+    }
+
+    //Check all commits
+    while(ptr){
+        if(ptr != commitHead){//Don't check if files exist on current commit
+            FileNode* fileptr = ptr->fileHead;
+
+            //Iterate SLL
+            while(fileptr){
+                //Return true if the file and version is found already (means file should exist already)
+                if(fileptr->name == fileName && fileptr->version == version) return fileptr;
+            }
+        }
+
+        ptr = ptr->next;
+    }
+
+    return NULL;
+}
+
+void createFileVersion(string fileName, int version){
+    string fn = fileName;
+    if(version < 10){
+        fn = fn + "0";
+    }
+    fn = fn + to_string(version);
+
+    ifstream infile;
+    infile.open(fileName);
+    ofstream outfile;
+    outfile.open(".minigit/" + fn);
+
+    string line;
+    while(getline(infile, line)){
+        outfile << line;
+    }
+
+    infile.close();
+    outfile.close();
+}
+
+bool areFilesEqual(FileNode* currVer, FileNode* newVer){
+    ifstream currFile; //File is in .minigit
+    currFile.open(".minigit/" + currVer->name + to_string(currVer->version));
+
+    ifstream newFile;
+    newFile.open(newVer->name);
+
+
+    string currFileStr, newFileStr, a, b;
+
+    while(getline(currFile, a)){
+        currFileStr += a;
+    }
+    while(getline(newFile, b)){
+        newFileStr += b;
+    }
+
+    if(currFileStr == newFileStr) return true;
+    else return false;
+}
+
+void copySLL(BranchNode* a, BranchNode* b){
+    //Loop through A's SLL
+    FileNode* a_iter = a->fileHead;
+    while(a_iter){
+        FileNode* clone = new FileNode();
+        clone->name = a_iter->name;
+        clone->version = a_iter->version;
+
+        FileNode* b_iter = b->fileHead;
+        if(b_iter){//If not first insert
+            while(b_iter->next){//Loop to end of b
+                b_iter = b_iter->next;
+            }
+            b_iter->next = clone;
+        }else{ //Else this is the first file inserted
+            b->fileHead = clone;
+        }
+    }
+}
 
 string MiniGit::commit(string msg) {
-    return " "; //should return the commitID of the commited DLL node
+
+    commitHead->commitMessage = msg;
+
+    FileNode* fileptr = commitHead->fileHead;
+    while(fileptr){
+        FileNode* prevVersion = findExistingVersion(fileptr->name, fileptr->version);
+
+        if(!prevVersion){ //No file exists for this version
+            createFileVersion(fileptr->name, fileptr->version);
+        }
+        else if(!areFilesEqual(fileptr, prevVersion)){//If files are not equal create new version
+            fileptr->version = fileptr->version + 1;
+
+            createFileVersion(fileptr->name, fileptr->version);
+        }
+    }
+
+    /**
+     * TODO: Need to take all the words and add them to the hash table??
+     */
+    
+
+    BranchNode* newNode = new BranchNode();
+    
+    copySLL(commitHead, newNode);
+
+    commitHead->next = newNode;
+    newNode->previous = commitHead;
+    newNode->commitID = commitHead->commitID + 1;
+
+    commitHead = newNode;
+
+    return to_string(newNode->commitID); //should return the commitID of the commited DLL node
 }
 
 void MiniGit::checkout(string commitID) {

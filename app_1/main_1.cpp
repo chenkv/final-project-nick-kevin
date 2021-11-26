@@ -41,26 +41,37 @@ int main(int argc, char* argv[]) {
                 break;
             }
 
-            case 3:
+            case 3:{
+                cout << "Enter file name\n#> ";
+                string filename;
+                cin >> filename;
+
+                git.rm(filename);
+                break;
+            }
+            case 4:{
+                string msg;
+                do{
+                    cout << "Enter unique commit message\n#> ";
+                    cin >> msg;
+                }while(!git.isUniqueCommitMessage(msg));
+
+                git.commit(msg);
 
                 break;
-
-            case 4:
-
-                break;
-
-            case 5:
+            }
+            case 5:{
 
                 break;
-
-            case 6:
+            }
+            case 6: {
 
                 break;
-            
-            case 7:
+            }
+            case 7: {
                 return 0;
                 break;
-
+            }
             default: {
                 cout << "Improper choice" << endl;
                 displayMenu();

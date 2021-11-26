@@ -40,6 +40,8 @@ public:
     void add(string fileName);
     void rm(string fileName);
     void search(string key);
+    bool isUniqueCommitMessage(string msg);
+    FileNode* findExistingVersion(string fileName, int version);
     string commit(string msg);
     void checkout(string commitID);
     void printSearchTable();
