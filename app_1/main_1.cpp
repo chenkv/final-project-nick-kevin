@@ -60,7 +60,14 @@ int main(int argc, char* argv[]) {
 
                 break;
             }
-            case 5:{
+            case 5: {
+                int id;
+                do {
+                    cout << "Enter a commit number to checkout\n#> ";
+                    cin >> id;
+                } while (git.isValidCommitID(id));
+
+                git.checkout(to_string(id));
 
                 break;
             }
