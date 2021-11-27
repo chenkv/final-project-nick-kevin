@@ -41,6 +41,7 @@ public:
     void rm(string fileName);
     void search(string key);
     bool isUniqueCommitMessage(string msg);
+    bool isValidCommitID(int id);
     FileNode* findExistingVersion(string fileName, int version);
     string commit(string msg);
     void checkout(string commitID);

@@ -70,7 +70,12 @@ void MiniGit::add(string fileName) {
         FileNode* curr = latest->fileHead;
         while (curr != NULL) {
             if (curr->name.substr(0, fileName.size()) == fileName) {
-                version++;
+                FileNode* temp = new FileNode();
+                temp->name = fileName;
+
+                if (!areFilesEqual(curr, temp)) {
+                    version++;
+                }
             }
             curr = curr->next;
         }
@@ -79,7 +84,6 @@ void MiniGit::add(string fileName) {
     }
 
     FileNode* curr = latest->fileHead;
-    cout << "CHECKING THE LATEST" << endl;
 
     while (curr != NULL) {
         cout << curr->name << endl;
@@ -90,13 +94,13 @@ void MiniGit::add(string fileName) {
         curr = curr->next;
     }
 
-    string ver = "";
+    // string ver = "";
 
-    if (version < 10) {
-        ver += "0" + to_string(version);
-    } else {
-        ver = to_string(version);
-    }
+    // if (version < 10) {
+    //     ver += "0" + to_string(version);
+    // } else {
+    //     ver = to_string(version);
+    // }
 
     FileNode* temp = new FileNode();
     temp->name = fileName;
@@ -351,7 +355,64 @@ string MiniGit::commit(string msg) {
     return to_string(newNode->commitID); //should return the commitID of the commited DLL node
 }
 
-void MiniGit::checkout(string commitID) {
-   
+bool MiniGit::isValidCommitID(int id) {
+    BranchNode* curr = commitHead;
 
+    while (curr->previous != NULL) {
+        curr = curr->previous;
+    }
+
+    while (curr != NULL) {
+        if (curr->commitID == id) {
+            return true;
+        }
+        curr = curr->next;
+    }
+    return false;
+}
+
+void MiniGit::checkout(string commitID) {
+    string confirm;
+
+    cout << "You will lose your current changes if you checkout before you commit! Type \"confirm\" to continue...\n";
+    while (confirm != "confirm") {
+        cout << "#> ";
+        cin >> confirm;
+    }
+
+    int id = stoi(commitID);
+    BranchNode* curr = commitHead;
+
+    while (curr->previous != NULL) {
+        curr = curr->previous;
+    }
+
+    while (curr->commitID != id) {
+        curr = curr->next;
+    }
+
+    commitHead = curr;
+
+    FileNode* looper = curr->fileHead;
+    while (looper != NULL) {
+        fs::remove(looper->name);
+        looper = looper->next;
+    }
+
+    looper = curr->fileHead;
+    while (looper != NULL) {
+        ifstream myfile;
+        ofstream output;
+
+        myfile.open(".minigit/" + looper->name);
+        output.open(looper->name, ios::out);
+
+        string line;
+
+        while (getline(myfile, line)) {
+            output << line;            
+        }
+
+        output.close();
+    }    
 }
