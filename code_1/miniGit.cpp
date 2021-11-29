@@ -10,6 +10,7 @@ namespace fs = std::filesystem;
 #include <vector>
 
 void createFileVersion(string fileName, int version);
+bool areFilesEqual(FileNode* currVer, FileNode* newVer);
 
 MiniGit::MiniGit() {
     fs::remove_all(".minigit");
@@ -34,6 +35,7 @@ void MiniGit::init(int hashtablesize) {
     //     cout << "git already initialized!" << endl;
     //     return;
     // }
+    fs::remove_all(".minigit");
     fs::create_directory(".minigit");
     BranchNode* temp = new BranchNode();
     temp->commitID = 0;
@@ -42,6 +44,8 @@ void MiniGit::init(int hashtablesize) {
     temp->previous = NULL;
 
     commitHead = temp;
+
+    ht = new HashTable(hashtablesize);
 
 //    commitHead = new BranchNode();
 //    commitHead->commitID = 0;
@@ -162,6 +166,17 @@ void MiniGit::printSearchTable()
 
 void MiniGit::search(string key)
 {
+    HashNode* ptr = ht->searchItem(key);
+    if(ptr != NULL){
+        cout << key << " in commit(s) ";
+        for(int i = 0; i < ptr->commitNums.size(); i++){
+            cout << ptr->commitNums.at(i) << " ";
+        }
+        cout << endl;
+    }
+    else{
+        cout << "Key not found." << endl;
+    }
 }
 
 void MiniGit::printCommits(){
@@ -231,6 +246,7 @@ FileNode* MiniGit::findExistingVersion(string fileName, int version){
             while(fileptr){
                 //Return true if the file and version is found already (means file should exist already)
                 if(fileptr->name == fileName && fileptr->version == version) return fileptr;
+                fileptr = fileptr->next;
             }
         }
 
@@ -283,9 +299,6 @@ bool areFilesEqual(FileNode* currVer, FileNode* newVer){
         newFileStr += b;
     }
 
-    cout << currFileStr << endl;
-    cout << newFileStr << endl;
-
     if(currFileStr == newFileStr) return true;
     return false;
 }
@@ -312,6 +325,24 @@ void copySLL(BranchNode* a, BranchNode* b){
     }
 }
 
+vector<string> splitString (string msg){
+    string str = msg;
+    vector<string> split;
+    
+    if(str.find(" ") != string::npos){
+        while(str.find(" ") != string::npos){
+            split.push_back(str.substr(0, str.find(" ")));
+            str = str.substr(str.find(" ") + 1);
+        }
+        split.push_back(str);
+    }
+    else{
+        split.push_back(msg);
+    }
+
+    return split;
+}
+
 string MiniGit::commit(string msg) {
     commitHead->commitMessage = msg;
 
@@ -334,11 +365,12 @@ string MiniGit::commit(string msg) {
         fileptr = fileptr->next;
     }
 
-    /**
-     * TODO: Need to take all the words and add them to the hash table??
-     */
+    //split string
+    vector<string> split = splitString(msg);
+    for(int i = 0; i < split.size(); i++){
+        ht->insertItem(split.at(i), commitHead->commitID);
+    }
     
-
     BranchNode* newNode = new BranchNode();
     
     copySLL(commitHead, newNode);
@@ -349,7 +381,7 @@ string MiniGit::commit(string msg) {
 
     commitHead = newNode;
 
-    cout << commitHead->previous->commitMessage;
+    //cout << commitHead->previous->commitMessage;
 
 
     return to_string(newNode->commitID); //should return the commitID of the commited DLL node
@@ -404,7 +436,13 @@ void MiniGit::checkout(string commitID) {
         ifstream myfile;
         ofstream output;
 
-        myfile.open(".minigit/" + looper->name);
+        string fn = looper->name;
+        if(looper->version < 10){
+            fn += "0";
+        }
+        fn += to_string(looper->version);
+
+        myfile.open(".minigit/" + fn);
         output.open(looper->name, ios::out);
 
         string line;
@@ -414,5 +452,7 @@ void MiniGit::checkout(string commitID) {
         }
 
         output.close();
-    }    
+
+        looper = looper->next;
+    }
 }
