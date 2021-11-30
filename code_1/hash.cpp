@@ -68,10 +68,10 @@ bool HashTable::insertItem(string key, int cNum)
 
     HashNode* ptr = table[index];
     if(ptr){
-        while(ptr->next != NULL){
-            ptr = ptr->next;
-        }
-        ptr->next = insert;
+        HashNode* temp = table[index];
+        table[index] = insert;
+        insert->next = temp;
+
         return true;
     }else{
         table[index] = insert;
@@ -98,16 +98,21 @@ bool HashTable::insertItem(string key, int cNum)
 */
 void HashTable::printTable()
 {
-    for(int i = 0;  i< tableSize; i++){
+    for(int i = 0; i < tableSize; i++){
         cout << i << "|| ";
         
         HashNode* ptr = table[i];
-        while(ptr){
+
+        while(ptr != NULL) {
             cout << ptr->key << "(";
             for(int j = 0; j < ptr->commitNums.size(); j++){
                 cout << ptr->commitNums.at(j) << ",";
             }
             cout << ")";
+            if (ptr->next != NULL) {
+                cout << "-->";
+            }
+            ptr = ptr->next;
         }
         cout << endl;
     }

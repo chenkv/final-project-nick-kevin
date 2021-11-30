@@ -14,7 +14,7 @@ bool areFilesEqual(FileNode* currVer, FileNode* newVer);
 
 MiniGit::MiniGit() {
     fs::remove_all(".minigit");
-    fs::create_directory(".minigit");
+    // fs::create_directory(".minigit");
 }
 
 MiniGit::~MiniGit() {   
@@ -31,10 +31,10 @@ void printCommitMenu(){
 }
 
 void MiniGit::init(int hashtablesize) {
-    // if (fs::exists(".minigit")) {
-    //     cout << "git already initialized!" << endl;
-    //     return;
-    // }
+    if (fs::exists(".minigit")) {
+        cout << "git already initialized!" << endl;
+        return;
+    }
     fs::remove_all(".minigit");
     fs::create_directory(".minigit");
     BranchNode* temp = new BranchNode();
@@ -46,11 +46,6 @@ void MiniGit::init(int hashtablesize) {
     commitHead = temp;
 
     ht = new HashTable(hashtablesize);
-
-//    commitHead = new BranchNode();
-//    commitHead->commitID = 0;
-//    commitHead->fileHead = NULL;
-//    commitHead->previous = NULL;
 }
 
 void MiniGit::add(string fileName) {
@@ -58,70 +53,46 @@ void MiniGit::add(string fileName) {
     myfile.open(fileName);
 
     while (!myfile.is_open()) {
-        cout << "Enter a valid file name: ";
+        cout << "Enter a valid file name:\n#> ";
         cin >> fileName;
         myfile.open(fileName);
     }
 
     BranchNode* latest = commitHead;
-    int version = 0;
 
     while (latest->previous != NULL) {
         latest = latest->previous;
     }
 
     while (latest->next != NULL) {
-        FileNode* curr = latest->fileHead;
-        while (curr != NULL) {
-            if (curr->name.substr(0, fileName.size()) == fileName) {
-                FileNode* temp = new FileNode();
-                temp->name = fileName;
-
-                if (!areFilesEqual(curr, temp)) {
-                    version++;
-                }
-            }
-            curr = curr->next;
-        }
-
         latest = latest->next;
     }
 
     FileNode* curr = latest->fileHead;
 
     while (curr != NULL) {
-        cout << curr->name << endl;
         if (curr->name == fileName) {
-            cout << "A file by the same name cannot be added twice!" << endl;
+            cout << "The same file cannot be added twice!" << endl;
             return;
         }
         curr = curr->next;
     }
 
-    // string ver = "";
-
-    // if (version < 10) {
-    //     ver += "0" + to_string(version);
-    // } else {
-    //     ver = to_string(version);
-    // }
-
     FileNode* temp = new FileNode();
     temp->name = fileName;
-    temp->version = version;
+    temp->version = 0;
     temp->next = NULL;
 
     if (latest->fileHead == NULL) {
         latest->fileHead = temp;
     } else {
         curr = latest->fileHead;
+
         while (curr->next != NULL) {
             curr = curr->next;
         }
         curr->next = temp;
     }
-
-    cout << temp->name << " was added to the SLL as version: " << to_string(temp->version) << endl;
 
     curr = latest->fileHead;
     cout << "Current files are: ";
@@ -148,15 +119,22 @@ FileNode* rmHelper(FileNode* ptr, string fileName, bool & removed){
 }
 
 void MiniGit::rm(string fileName) {
-    FileNode* SLL = commitHead->fileHead;
-    bool removed = false;
-    commitHead->fileHead = rmHelper(SLL, fileName, removed);
+    if (commitHead == NULL) {
+        cout << "Not even initialized!" << endl;
+        return;
+    }
 
-    if(removed) cout << "Removed " << fileName << endl;
-    else cout << "File not found." << endl;
+    if (commitHead->fileHead != NULL) {
+        FileNode* SLL = commitHead->fileHead;
+        bool removed = false;
+        commitHead->fileHead = rmHelper(SLL, fileName, removed);
+
+        if(removed) cout << "Removed " << fileName << endl;
+        else cout << "File not found." << endl;
+    } else {
+        cout << "File not found." << endl;
+    }
 }
-
-
 
 void MiniGit::printSearchTable()
 {
@@ -168,7 +146,7 @@ void MiniGit::search(string key)
 {
     HashNode* ptr = ht->searchItem(key);
     if(ptr != NULL){
-        cout << key << " in commit(s) ";
+        cout << key << " in commit(s): ";
         for(int i = 0; i < ptr->commitNums.size(); i++){
             cout << ptr->commitNums.at(i) << " ";
         }
@@ -269,7 +247,13 @@ void createFileVersion(string fileName, int version){
     outfile.open(".minigit/" + fn);
 
     string line;
-    while(getline(infile, line)){
+
+    if (getline(infile, line)) {
+        outfile << line;
+    }
+
+    while(getline(infile, line)) {
+        outfile << "\n";
         outfile << line;
     }
 
@@ -292,10 +276,21 @@ bool areFilesEqual(FileNode* currVer, FileNode* newVer){
 
     string currFileStr, newFileStr, a, b;
 
-    while(getline(currFile, a)){
+    if (getline(currFile, a)) {
         currFileStr += a;
     }
-    while(getline(newFile, b)){
+
+    while(getline(currFile, a)){
+        currFileStr += "\n";
+        currFileStr += a;
+    }
+
+    if (getline(newFile, b)) {
+        newFileStr += b;
+    }
+
+    while(getline(newFile, b)) {
+        newFileStr += "\n";
         newFileStr += b;
     }
 
@@ -381,9 +376,6 @@ string MiniGit::commit(string msg) {
 
     commitHead = newNode;
 
-    //cout << commitHead->previous->commitMessage;
-
-
     return to_string(newNode->commitID); //should return the commitID of the commited DLL node
 }
 
@@ -406,14 +398,25 @@ bool MiniGit::isValidCommitID(int id) {
 void MiniGit::checkout(string commitID) {
     string confirm;
 
-    cout << "You will lose your current changes if you checkout before you commit! Type \"confirm\" to continue...\n";
+    cout << "You will lose your current changes if you checkout before you commit! Type \"confirm\" to continue or \"cancel\" to stop...\n";
     while (confirm != "confirm") {
         cout << "#> ";
-        cin >> confirm;
+        getline(cin, confirm);
+    }
+
+    if (confirm == "cancel") {
+        cout << "Canceling..." << endl;
+        return;
     }
 
     int id = stoi(commitID);
     BranchNode* curr = commitHead;
+    FileNode* looper = curr->fileHead;
+
+    while (looper != NULL) {
+        fs::remove(looper->name);
+        looper = looper->next;
+    }
 
     while (curr->previous != NULL) {
         curr = curr->previous;
@@ -425,11 +428,7 @@ void MiniGit::checkout(string commitID) {
 
     commitHead = curr;
 
-    FileNode* looper = curr->fileHead;
-    while (looper != NULL) {
-        fs::remove(looper->name);
-        looper = looper->next;
-    }
+    cout << "Now on commit number: " << commitHead->commitID << endl;
 
     looper = curr->fileHead;
     while (looper != NULL) {
@@ -447,12 +446,24 @@ void MiniGit::checkout(string commitID) {
 
         string line;
 
+        if (getline(myfile, line)) {
+            output << line;
+        }
+
         while (getline(myfile, line)) {
-            output << line;            
+            output << "\n"; 
+            output << line;   
         }
 
         output.close();
 
         looper = looper->next;
     }
+}
+
+bool MiniGit::isLatestBranch() {
+    if (commitHead->next == NULL) {
+        return true;
+    }
+    return false;
 }

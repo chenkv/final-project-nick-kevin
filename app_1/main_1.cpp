@@ -44,27 +44,31 @@ int main(int argc, char* argv[]) {
                 break;
             }
             case 2: {
-                string name;
-                cout << "Enter the filename to be added: ";
-                //cin >> name;
-                getline(cin, name);
-                git.add(name);
+                if (!git.isLatestBranch()) {
+                    cout << "You can only add to the latest branch!" << endl;
+                } else {
+                    string name;
+                    cout << "Enter the filename to be added:\n#> ";
+                    getline(cin, name);
+                    git.add(name);
+                }
                 break;
             }
 
             case 3:{
-                cout << "Enter file name\n#> ";
-                string filename;
-                //cin >> filename;
-                getline(cin, filename);
+                if (!git.isLatestBranch()) {
+                    cout << "You can only remove on the latest branch!" << endl;
+                } else {
+                    cout << "Enter file name\n#> ";
+                    string filename;
+                    getline(cin, filename);
 
-                git.rm(filename);
+                    git.rm(filename);
+                }
                 break;
             }
-            case 4:{
-                //cin.clear();
-                //cin.sync();
-                //cin.ignore();
+            case 4: {
+                
                 string msg = "";
                 cout << "Enter unique commit message\n#> ";
                 getline(cin, msg);
@@ -76,13 +80,6 @@ int main(int argc, char* argv[]) {
                     }
                 }
 
-                /*
-                do{
-                    
-                    getline(cin, msg);
-                }while(!git.isUniqueCommitMessage(msg));
-                */
-
                 git.commit(msg);
 
                 break;
@@ -92,7 +89,6 @@ int main(int argc, char* argv[]) {
                 int id = -1;
                 do {
                     cout << "Enter a commit number to checkout\n#> ";
-                    //cin >> id;
                     getline(cin, idstr);
                     if(idstr.length() == 1 && isdigit(idstr[0])) id = stoi(idstr);
 

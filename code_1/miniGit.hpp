@@ -42,6 +42,7 @@ public:
     void search(string key);
     bool isUniqueCommitMessage(string msg);
     bool isValidCommitID(int id);
+    bool isLatestBranch();
     FileNode* findExistingVersion(string fileName, int version);
     string commit(string msg);
     void checkout(string commitID);
