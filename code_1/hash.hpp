@@ -7,7 +7,7 @@
 
 using namespace std;
 
-struct  HashNode //hash node datastructure
+struct HashNode //hash node datastructure
 {
     string key;
     vector<int> commitNums;

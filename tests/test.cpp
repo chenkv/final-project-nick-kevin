@@ -83,7 +83,7 @@ TEST_F(test_x, TestInsert){
     expected = "0|| science(1,4,)\n1|| \n2|| \n3|| \n4|| difficult(3,)-->fun(2,)-->computer(0,)\n";
     
     ASSERT_EQ(expected, result);
-    add_points_to_grade(6);
+    add_points_to_grade(10);
 
 	// Testing insertion without duplicates
 	commits[0] = "dish";
@@ -98,7 +98,7 @@ TEST_F(test_x, TestInsert){
     expected = "0|| \n1|| laborous(4,)\n2|| \n3|| cLean(3,)-->slippery(2,)-->Soap(1,)\n4|| dish(0,)\n";
     
     ASSERT_EQ(expected, result);
-    add_points_to_grade(6);
+    add_points_to_grade(10);
 
 
 	string commits1[] = {"driving", "Car", "is", "FUN!", "how?", "@the", "57J", "obERLin", "!@#", "^%&", "PlAte*!", "yummy()@#", "&^&%", "[]-+", ";\""};
@@ -109,7 +109,7 @@ TEST_F(test_x, TestInsert){
     expected = "0|| PlAte*!(10,)-->@the(5,)-->is(2,)-->driving(0,)\n1|| obERLin(7,)-->FUN!(3,)\n2|| []-+(13,)-->&^&%(12,)-->yummy()@#(11,)-->!@#(8,)-->57J(6,)-->how?(4,)\n3|| ;\"(14,)-->Car(1,)\n4|| ^%&(9,)\n";
     
     ASSERT_EQ(expected, result);
-    add_points_to_grade(6);
+    add_points_to_grade(15);
 
 	// Testing insertion with duplicates
 	commits[0] = "dish";
@@ -124,7 +124,7 @@ TEST_F(test_x, TestInsert){
     expected = "0|| \n1|| Slippery(4,)\n2|| funky(1,)\n3|| slippery(2,)\n4|| dish(0,3,)\n";
     
     ASSERT_EQ(expected, result);
-    add_points_to_grade(6);
+    add_points_to_grade(15);
 
 
 	string commits2[] = {"tanky", "lanky", "blanky", "stanky", "lanky", "danky", "stanky", "stanky", "danky", "tanky", "flanky", "sanky", "stanky", "Danky", "blanky"};
@@ -135,12 +135,55 @@ TEST_F(test_x, TestInsert){
     expected = "0|| sanky(11,)-->flanky(10,)-->danky(5,8,)\n1|| stanky(3,6,7,12,)-->blanky(2,14,)-->tanky(0,9,)\n2|| \n3|| Danky(13,)-->lanky(1,4,)\n4|| \n";
     
     ASSERT_EQ(expected, result);
-    add_points_to_grade(6);
+    add_points_to_grade(15);
 }
 
 //TODO add more tests for insert. Design tests for search from hashTable.
 
 // Test for searching the hashTable
 TEST_F(test_x, TestSearch) {
-	
+	string result;
+    string expected;
+	string search;
+       
+    int len = 5;
+    
+    string commits[] = {"computer", "science", "fun", "difficult", "science"};
+    int tabSize = 5;
+	search = "science";
+    
+    result = test_search(commits, len, tabSize, search);
+    
+    expected = "0|| science(1,4,)\n1|| \n2|| \n3|| \n4|| difficult(3,)-->fun(2,)-->computer(0,)\nscience: 1, 4, \n";
+    
+    ASSERT_EQ(expected, result);
+    add_points_to_grade(10);
+
+
+	commits[0] = "dish";
+	commits[1] = "funky";
+	commits[2] = "slippery";
+	commits[3] = "dish";
+	commits[4] = "Slippery";
+	len = 5;
+	search = "dish";
+
+	result = test_search(commits, len, tabSize, search);
+    
+    expected = "0|| \n1|| Slippery(4,)\n2|| funky(1,)\n3|| slippery(2,)\n4|| dish(0,3,)\ndish: 0, 3, \n";
+    
+    ASSERT_EQ(expected, result);
+    add_points_to_grade(10);
+
+
+	string commits2[] = {"tanky", "lanky", "blanky", "stanky", "lanky", "danky", "stanky", "stanky", "danky", "tanky", "flanky", "sanky", "stanky", "Danky", "blanky"};
+	len = 15;
+	search = "stanky";
+
+	result = test_search(commits2, len, tabSize, search);
+    
+    expected = "0|| sanky(11,)-->flanky(10,)-->danky(5,8,)\n1|| stanky(3,6,7,12,)-->blanky(2,14,)-->tanky(0,9,)\n2|| \n3|| Danky(13,)-->lanky(1,4,)\n4|| \nstanky: 3, 6, 7, 12, \n";
+    
+    ASSERT_EQ(expected, result);
+    add_points_to_grade(15);
 }
