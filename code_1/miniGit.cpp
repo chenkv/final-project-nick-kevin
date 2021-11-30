@@ -103,6 +103,9 @@ void MiniGit::add(string fileName) {
     cout << endl;
 }
 
+/*
+    Uses recursion to find node in question, remove it, and stitch together linked list.
+ */
 FileNode* rmHelper(FileNode* ptr, string fileName, bool & removed){
     if(ptr->name == fileName){
         FileNode* next = ptr->next;
@@ -157,6 +160,9 @@ void MiniGit::search(string key)
     }
 }
 
+/*
+    Helper function that was used in testing to print commit history.
+*/
 void MiniGit::printCommits(){
     BranchNode* commit = commitHead;
 
@@ -184,6 +190,9 @@ void MiniGit::printCommits(){
     cout << endl;
 }
 
+/*
+    Checks if a given commit message is unique or not
+*/
 bool MiniGit::isUniqueCommitMessage(string msg){
     BranchNode* ptr = commitHead;
 
@@ -207,6 +216,9 @@ bool MiniGit::isUniqueCommitMessage(string msg){
     return true;
 }
 
+/*
+    returns a fileptr to the file version if it exists anywhere in commit history.
+*/
 FileNode* MiniGit::findExistingVersion(string fileName, int version){
     BranchNode* ptr = commitHead;
 
@@ -234,6 +246,9 @@ FileNode* MiniGit::findExistingVersion(string fileName, int version){
     return NULL;
 }
 
+/*
+    Creates new file in .minigit for the version of the current file in the directory.
+*/
 void createFileVersion(string fileName, int version){
     string fn = fileName;
     if(version < 10){
@@ -261,6 +276,9 @@ void createFileVersion(string fileName, int version){
     outfile.close();
 }
 
+/*
+Checks to see if currVer (file already saved in .minigit) is equal to newVer (file in directory)
+*/
 bool areFilesEqual(FileNode* currVer, FileNode* newVer){
     string currFileName = currVer->name;
     if(currVer->version < 10){
@@ -298,6 +316,9 @@ bool areFilesEqual(FileNode* currVer, FileNode* newVer){
     return false;
 }
 
+/*
+    Performs a deep copy of the SLL of a branch node
+*/
 void copySLL(BranchNode* a, BranchNode* b){
     //Loop through A's SLL
     FileNode* a_iter = a->fileHead;
@@ -320,6 +341,9 @@ void copySLL(BranchNode* a, BranchNode* b){
     }
 }
 
+/*
+    Splits a string with space as a delimiter
+*/
 vector<string> splitString (string msg){
     string str = msg;
     vector<string> split;
@@ -399,12 +423,11 @@ void MiniGit::checkout(string commitID) {
     string confirm;
 
     cout << "You will lose your current changes if you checkout before you commit! Type \"confirm\" to continue or \"cancel\" to stop...\n";
-    while (confirm != "confirm") {
-        cout << "#> ";
-        getline(cin, confirm);
-    }
 
-    if (confirm == "cancel") {
+    cout << "#> ";
+    getline(cin, confirm);
+
+    if (confirm != "confirm") {
         cout << "Canceling..." << endl;
         return;
     }

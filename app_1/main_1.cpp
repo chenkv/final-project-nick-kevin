@@ -68,19 +68,23 @@ int main(int argc, char* argv[]) {
                 break;
             }
             case 4: {
-                
-                string msg = "";
-                cout << "Enter unique commit message\n#> ";
-                getline(cin, msg);
+                if (!git.isLatestBranch()){
+                    cout << "You can only commit on the latest branch!" << endl;
+                }else {
+                    string msg = "";
+                    cout << "Enter unique commit message\n#> ";
+                    getline(cin, msg);
 
-                if(!git.isUniqueCommitMessage(msg)){
-                    while(!git.isUniqueCommitMessage(msg)){
-                        cout << "Enter unique commit message\n#> ";
-                        getline(cin, msg);
+                    if(!git.isUniqueCommitMessage(msg)){
+                        while(!git.isUniqueCommitMessage(msg)){
+                            cout << "Enter unique commit message\n#> ";
+                            getline(cin, msg);
+                        }
                     }
-                }
 
-                git.commit(msg);
+                    git.commit(msg);
+                }
+                
 
                 break;
             }
