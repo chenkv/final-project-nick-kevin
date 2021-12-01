@@ -6,7 +6,7 @@ Please include a thorough description of your program's functionality. Imagine t
 
 ## Summary
 
-This project is designed to be a minig version of git as a file version control system.
+This project is designed to be a mini version of git as a file version control system. The user can add and delete files to keep track of. Then, each commit branch is stored in a double linked list. Each file of each version is stored as a singly linked list that each node in the doubly linked list points to. As updates are created and committed, past file versions are stored in the .minigit directory. The user is then able to retrieve past version of files by "checking" them out. With each commit is a commit message which is stored in a hash table. The user is also able to search the commits to find which commits contain the matching keyword in their commit message.
 
 ## main_1.cpp
       
